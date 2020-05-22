@@ -9,7 +9,7 @@ import java.util.*
 class CarsService(private val repository: CarsRepository) {
     fun storeCar(externalUUID: UUID, name: String): Car {
         val car = repository.findByExternalUUID(externalUUID) ?: Car(
-                externalUUID = UUID.randomUUID(),
+                externalUUID = externalUUID,
                 tempCarName = name
         )
         car.tempCarName = name
