@@ -5,15 +5,15 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd"
 >
-    <changeSet id="create_table_cars" author="dyakovlev">
-        <createTable tableName="cars">
+    <changeSet id="create_table_products" author="dyakovlev">
+        <createTable tableName="products">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="external_uuid" type="uuid">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="temp_car_name" type="text">
+            <column name="name" type="text">
                 <constraints nullable="false"/>
             </column>
             <column name="year" type="int"/>
