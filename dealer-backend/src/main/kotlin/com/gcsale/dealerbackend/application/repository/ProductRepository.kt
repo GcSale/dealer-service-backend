@@ -1,6 +1,6 @@
-package com.gcsale.dealerbackend.repository
+package com.gcsale.dealerbackend.application.repository
 
-import com.gcsale.dealerbackend.models.Product
+import com.gcsale.dealerbackend.domain.models.Product
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import java.util.*

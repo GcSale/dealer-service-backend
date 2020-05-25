@@ -8,9 +8,22 @@ plugins {
     kotlin("plugin.jpa") version "1.3.72"
 }
 
+sourceSets {
+    create("intTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
 group = "com.gcsale"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_14
+
+val intTestImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+}
+configurations["intTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+configurations["intTestImplementation"].extendsFrom(configurations.testImplementation.get())
 
 repositories {
     mavenCentral()
@@ -35,7 +48,7 @@ dependencies {
         exclude(module = "junit")
         exclude(module = "mockito-core")
     }
-    testImplementation("org.springframework.security:spring-security-test")
+    intTestImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("com.ninja-squad:springmockk:2.0.1")
@@ -51,3 +64,14 @@ tasks.withType<KotlinCompile> {
         jvmTarget = "13"
     }
 }
+
+val integrationTest = task<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = "verification"
+
+    testClassesDirs = sourceSets["intTest"].output.classesDirs
+    classpath = sourceSets["intTest"].runtimeClasspath
+    shouldRunAfter("test")
+}
+
+tasks.check { dependsOn(integrationTest) }

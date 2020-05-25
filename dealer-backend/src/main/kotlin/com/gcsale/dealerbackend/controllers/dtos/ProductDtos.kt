@@ -1,4 +1,4 @@
-package com.gcsale.dealerbackend.web.controllers.dtos
+package com.gcsale.dealerbackend.controllers.dtos
 
 import java.util.*
 

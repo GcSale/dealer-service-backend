@@ -1,4 +1,4 @@
-package com.gcsale.dealerbackend.models
+package com.gcsale.dealerbackend.domain.models
 
 import java.util.*
 import javax.persistence.*
