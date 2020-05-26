@@ -1,5 +1,7 @@
 package com.gcsale.dealerbackend.infrastructure.web.controllers
 
+import com.gcsale.dealerbackend.application.commands.products.DeleteProductCommand
+import com.gcsale.dealerbackend.application.commands.products.DeleteProductCommandHandler
 import com.gcsale.dealerbackend.application.commands.products.SaveProductCommand
 import com.gcsale.dealerbackend.application.commands.products.SaveProductCommandHandler
 import com.gcsale.dealerbackend.application.queries.ProductQueries
@@ -8,7 +10,6 @@ import com.gcsale.dealerbackend.infrastructure.web.converters.ProductConverter
 import com.gcsale.dealerbackend.infrastructure.web.dtos.*
 import com.gcsale.dealerbackend.utils.SortUtils
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -18,7 +19,8 @@ import java.util.*
 @RequestMapping("/products")
 class ProductsController(private val productQueries: ProductQueries,
                          private val saveProductCommandHandler: SaveProductCommandHandler,
-                         private val productConverter: ProductConverter) {
+                         private val productConverter: ProductConverter,
+                         private val deleteProductCommandHandler: DeleteProductCommandHandler) {
     @GetMapping("/")
     fun getProducts(
             @RequestParam name: String?,
@@ -42,5 +44,12 @@ class ProductsController(private val productQueries: ProductQueries,
     fun saveProduct(@PathVariable uuid: UUID, @RequestBody dto: SaveProductIncomeDto) {
         val command = SaveProductCommand(uuid, dto.name)
         saveProductCommandHandler.execute(command)
+    }
+
+    @DeleteMapping("/{uuid}")
+    fun deleteProduct(@PathVariable uuid: UUID): ResponseEntity<Void> {
+        val command = DeleteProductCommand(uuid)
+        deleteProductCommandHandler.execute(command)
+        return ResponseEntity(HttpStatus.NO_CONTENT)
     }
 }

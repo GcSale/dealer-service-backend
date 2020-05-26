@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -122,5 +123,18 @@ internal class ProductsControllerTest {
     fun `get info about not existed product`() {
         val response = mockMvc.get("/products/${UUID.randomUUID()}").andReturn()
         assertEquals(HttpStatus.NOT_FOUND.value(), response.response.status)
+    }
+
+    @Test
+    fun `delete existed product`() {
+        val product = Product("super boat", UUID.randomUUID()).also { productRepository.saveAndFlush(it) }
+        val response = mockMvc.delete("/products/${product.externalUUID}").andReturn()
+        assertEquals(HttpStatus.NO_CONTENT.value(), response.response.status)
+    }
+
+    @Test
+    fun `delete not existed product`() {
+        val response = mockMvc.delete("/products/${UUID.randomUUID()}").andReturn()
+        assertEquals(HttpStatus.NO_CONTENT.value(), response.response.status)
     }
 }
