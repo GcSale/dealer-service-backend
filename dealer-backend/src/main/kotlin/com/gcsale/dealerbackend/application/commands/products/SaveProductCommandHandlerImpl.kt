@@ -5,10 +5,12 @@ import com.gcsale.dealerbackend.domain.services.ProductCreationDto
 import com.gcsale.dealerbackend.domain.services.ProductService
 import com.gcsale.dealerbackend.domain.services.ProductUpdateDto
 import org.springframework.stereotype.Service
+import javax.transaction.Transactional
 
 @Service
 class SaveProductCommandHandlerImpl(private val productService: ProductService,
                                     private val productRepository: ProductRepository) : SaveProductCommandHandler {
+    @Transactional
     override fun execute(command: SaveProductCommand) {
         val existedProduct = productRepository.findByExternalUUID(command.externalUUID)
         val product = if (existedProduct != null) {

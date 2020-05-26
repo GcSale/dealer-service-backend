@@ -1,30 +1,49 @@
 package com.gcsale.dealerbackend.infrastructure.web.controllers
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.gcsale.dealerbackend.application.repository.ProductRepository
-import com.gcsale.dealerbackend.controllers.dtos.SaveProductIncomeDto
 import com.gcsale.dealerbackend.domain.models.Product
+import com.gcsale.dealerbackend.infrastructure.web.dtos.PageDto
+import com.gcsale.dealerbackend.infrastructure.web.dtos.ProductListItemDto
+import com.gcsale.dealerbackend.infrastructure.web.dtos.SaveProductIncomeDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.*
+import javax.transaction.Transactional
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
 internal class ProductsControllerTest {
 
     @Autowired
     lateinit var productRepository: ProductRepository
 
     @Autowired
-    lateinit var testRestTemplate: TestRestTemplate
+    lateinit var mockMvc: MockMvc
+
+    @Autowired
+    lateinit var mapper: ObjectMapper
 
     @Test
     fun `create new product`() {
         val uuid = UUID.randomUUID()
         val dto = SaveProductIncomeDto("super car")
-        testRestTemplate.put("/products/${uuid}", dto, Void::class.java)
+        mockMvc.perform(put("/products/${uuid}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isOk)
 
         val product = productRepository.findByExternalUUID(uuid)
         assertNotNull(product)
@@ -39,12 +58,49 @@ internal class ProductsControllerTest {
         productRepository.save(existedProduct)
 
         val dto = SaveProductIncomeDto("new name")
-        testRestTemplate.put("/products/${existedProduct.externalUUID}", dto, Void::class.java)
+        mockMvc.perform(put("/products/${existedProduct.externalUUID}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(dto)))
+                .andExpect(status().isOk)
 
         val product = productRepository.findByExternalUUID(existedProduct.externalUUID)
         assertNotNull(product)
         assertNotNull(product!!.id)
         assertEquals(existedProduct.externalUUID, product.externalUUID)
         assertEquals(dto.name, product.name)
+    }
+
+    @Test
+    fun `find second page of products filtered by name with default sorting id desc`() {
+        val products = (0..10).map {
+            Product("p${it}", UUID.randomUUID()).also { p -> productRepository.saveAndFlush(p) }
+        }
+        val expectedProducts = products.reversed().subList(3, 6)
+
+        val response = mockMvc.get("/products/?name=p&pageSize=3&page=1").andReturn()
+        assertEquals(HttpStatus.OK.value(), response.response.status)
+
+        val data: PageDto<ProductListItemDto> = mapper.readValue(response.response.contentAsString)
+        (0..2).forEach { i ->
+            assertEquals(expectedProducts[i].name, data.items[i].name)
+            assertEquals(expectedProducts[i].externalUUID, data.items[i].uuid)
+        }
+    }
+
+    @Test
+    fun `find first page of products sorted by name desc`() {
+        val products = (0..9).map {
+            Product("p${9-it}", UUID.randomUUID()).also { p -> productRepository.saveAndFlush(p) }
+        }
+        val expectedProducts = products.subList(0, 4)
+
+        val response = mockMvc.get("/products/?pageSize=4&page=0&sort=-name").andReturn()
+        assertEquals(HttpStatus.OK.value(), response.response.status)
+
+        val data: PageDto<ProductListItemDto> = mapper.readValue(response.response.contentAsString)
+        (0..3).forEach { i ->
+            assertEquals(expectedProducts[i].name, data.items[i].name)
+            assertEquals(expectedProducts[i].externalUUID, data.items[i].uuid)
+        }
     }
 }
