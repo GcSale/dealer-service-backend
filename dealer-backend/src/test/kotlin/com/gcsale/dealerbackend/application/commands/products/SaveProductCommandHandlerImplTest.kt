@@ -1,6 +1,7 @@
 package com.gcsale.dealerbackend.application.commands.products
 
 import com.gcsale.dealerbackend.application.repository.ProductRepository
+import com.gcsale.dealerbackend.application.validators.SaveProductCommandValidator
 import com.gcsale.dealerbackend.domain.models.Product
 import com.gcsale.dealerbackend.domain.services.ProductCreationDto
 import com.gcsale.dealerbackend.domain.services.ProductService
@@ -17,8 +18,9 @@ internal class SaveProductCommandHandlerImplTest {
 
     private val productService = mockk<ProductService>()
     private val productRepository = mockk<ProductRepository>()
+    private val validator = mockk<SaveProductCommandValidator>()
 
-    private val handlerImpl = SaveProductCommandHandlerImpl(productService, productRepository)
+    private val handlerImpl = SaveProductCommandHandlerImpl(productService, productRepository, validator)
 
     @Test
     fun `Create new product`() {

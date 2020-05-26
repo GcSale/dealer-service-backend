@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.gcsale.dealerbackend.application.repository.ProductRepository
 import com.gcsale.dealerbackend.domain.models.Product
+import com.gcsale.dealerbackend.infrastructure.web.config.ValidationErrorDto
 import com.gcsale.dealerbackend.infrastructure.web.dtos.PageDto
 import com.gcsale.dealerbackend.infrastructure.web.dtos.ProductInfoDto
 import com.gcsale.dealerbackend.infrastructure.web.dtos.ProductListItemDto
@@ -70,6 +71,21 @@ internal class ProductsControllerTest {
         assertNotNull(product!!.id)
         assertEquals(existedProduct.externalUUID, product.externalUUID)
         assertEquals(dto.name, product.name)
+    }
+
+    @Test
+    fun `create new product validation exception`() {
+        val uuid = UUID.randomUUID()
+        val dto = SaveProductIncomeDto("c")
+        val response = mockMvc.perform(put("/products/${uuid}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(dto)))
+                .andReturn()
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.response.status)
+        val data: List<ValidationErrorDto> = mapper.readValue(response.response.contentAsString)
+        assertEquals(1, data.size)
+        assertEquals("name", data[0].field)
+        assertEquals("value.minlen", data[0].errorCode)
     }
 
     @Test

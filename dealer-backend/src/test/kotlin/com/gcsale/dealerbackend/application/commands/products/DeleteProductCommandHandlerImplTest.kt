@@ -1,18 +1,19 @@
 package com.gcsale.dealerbackend.application.commands.products
 
 import com.gcsale.dealerbackend.application.repository.ProductRepository
+import com.gcsale.dealerbackend.application.validators.DeleteProductCommandValidator
 import com.gcsale.dealerbackend.domain.models.Product
 import com.gcsale.dealerbackend.helpers.Factories
 import io.mockk.*
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import java.util.*
 
 internal class DeleteProductCommandHandlerImplTest {
 
     private val productRepository = mockk<ProductRepository>()
-    private val deleteProductCommandHandler = DeleteProductCommandHandlerImpl(productRepository)
+    private val validator = mockk<DeleteProductCommandValidator>()
+    private val deleteProductCommandHandler = DeleteProductCommandHandlerImpl(productRepository, validator)
 
     @Test
     fun `delete existed product`() {
