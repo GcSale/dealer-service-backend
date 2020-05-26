@@ -4,7 +4,7 @@ import com.gcsale.dealerbackend.application.converters.ProductQueriesConverter
 import com.gcsale.dealerbackend.application.repository.ProductRepository
 import com.gcsale.dealerbackend.domain.models.Product
 import io.mockk.*
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -89,6 +89,42 @@ internal class ProductQueriesImplTest {
             productConverter.convertProductToListItem(products[0])
             productConverter.convertProductToListItem(products[1])
             productConverter.convertProductToListItem(products[2])
+        }
+    }
+
+    @Test
+    fun `get existed product info`() {
+        val product = Product("prod", UUID.randomUUID())
+        val convertProduct = slot<Product>()
+
+        every { productRepository.findByExternalUUID(any()) } returns product
+        every {
+            productConverter.convertProductToProductInfo(capture(convertProduct))
+        } answers { ProductInfoResponse(convertProduct.captured.name, convertProduct.captured.externalUUID) }
+
+        val actual = productQueries.getProductInfo(product.externalUUID)
+
+        assertNotNull(actual)
+        assertEquals(product.name, actual!!.name)
+        assertEquals(product.externalUUID, actual.uuid)
+
+        verifyAll {
+            productRepository.findByExternalUUID(product.externalUUID)
+            productConverter.convertProductToProductInfo(product)
+        }
+    }
+
+    @Test
+    fun `get not existed product info`() {
+        every { productRepository.findByExternalUUID(any()) } returns null
+
+        val uuid = UUID.randomUUID()
+        val actual = productQueries.getProductInfo(uuid)
+
+        assertNull(actual)
+        verifyAll {
+            productRepository.findByExternalUUID(uuid)
+            productConverter wasNot Called
         }
     }
 }

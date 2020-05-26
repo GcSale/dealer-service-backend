@@ -1,5 +1,6 @@
 package com.gcsale.dealerbackend.infrastructure.web.converters
 
+import com.gcsale.dealerbackend.application.queries.ProductInfoResponse
 import com.gcsale.dealerbackend.application.queries.ProductsListItemResponse
 import com.gcsale.dealerbackend.infrastructure.web.dtos.ProductListItemDto
 import org.junit.jupiter.api.Assertions.*
@@ -17,5 +18,13 @@ internal class ProductConverterTest {
         val expected = ProductListItemDto(name, uuid)
         val actual = converter.convertProductListItem(ProductsListItemResponse(uuid, name))
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun convertProductInfo() {
+        val info = ProductInfoResponse("s", UUID.randomUUID())
+        val actual = converter.convertProductInfo(info)
+        assertEquals(info.name, actual.name)
+        assertEquals(info.uuid, actual.uuid)
     }
 }

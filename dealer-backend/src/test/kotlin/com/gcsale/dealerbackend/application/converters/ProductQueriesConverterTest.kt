@@ -17,4 +17,12 @@ internal class ProductQueriesConverterTest {
         assertEquals(product.name, result.name)
         assertEquals(product.externalUUID, result.uuid)
     }
+
+    @Test
+    fun convertProductToProductInfo() {
+        val product = Product("n", UUID.randomUUID())
+        val result = converter.convertProductToProductInfo(product)
+        assertEquals(product.name, result.name)
+        assertEquals(product.externalUUID, result.uuid)
+    }
 }

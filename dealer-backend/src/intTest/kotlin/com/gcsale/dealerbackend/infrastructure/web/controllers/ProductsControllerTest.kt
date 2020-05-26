@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.gcsale.dealerbackend.application.repository.ProductRepository
 import com.gcsale.dealerbackend.domain.models.Product
 import com.gcsale.dealerbackend.infrastructure.web.dtos.PageDto
+import com.gcsale.dealerbackend.infrastructure.web.dtos.ProductInfoDto
 import com.gcsale.dealerbackend.infrastructure.web.dtos.ProductListItemDto
 import com.gcsale.dealerbackend.infrastructure.web.dtos.SaveProductIncomeDto
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -90,7 +91,7 @@ internal class ProductsControllerTest {
     @Test
     fun `find first page of products sorted by name desc`() {
         val products = (0..9).map {
-            Product("p${9-it}", UUID.randomUUID()).also { p -> productRepository.saveAndFlush(p) }
+            Product("p${9 - it}", UUID.randomUUID()).also { p -> productRepository.saveAndFlush(p) }
         }
         val expectedProducts = products.subList(0, 4)
 
@@ -102,5 +103,24 @@ internal class ProductsControllerTest {
             assertEquals(expectedProducts[i].name, data.items[i].name)
             assertEquals(expectedProducts[i].externalUUID, data.items[i].uuid)
         }
+    }
+
+    @Test
+    fun `get info about existed product`() {
+        val product = Product("super boat", UUID.randomUUID()).also { productRepository.saveAndFlush(it) }
+
+        val response = mockMvc.get("/products/${product.externalUUID}").andReturn()
+        assertEquals(HttpStatus.OK.value(), response.response.status)
+
+        val data: ProductInfoDto = mapper.readValue(response.response.contentAsString)
+
+        assertEquals(product.name, data.name)
+        assertEquals(product.externalUUID, data.uuid)
+    }
+
+    @Test
+    fun `get info about not existed product`() {
+        val response = mockMvc.get("/products/${UUID.randomUUID()}").andReturn()
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.response.status)
     }
 }
