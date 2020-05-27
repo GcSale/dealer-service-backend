@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
@@ -15,6 +16,7 @@ data class ValidationErrorDto(val field: String, val errorCode: String)
 class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(ValidationException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleValidationException(ex: ValidationException, request: WebRequest):
             ResponseEntity<List<ValidationErrorDto>> {
         val dto = ex.errors.map {

@@ -14,6 +14,18 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
+import javax.validation.Valid
+
+enum class ProductSortFields(val data: String) {
+    ID_ASC("id"),
+    ID_DESC("-id"),
+    NAME_ASC("name"),
+    NAME_DESC("-name");
+
+    override fun toString(): String {
+        return data
+    }
+}
 
 @RestController
 @RequestMapping("/products")
@@ -26,8 +38,8 @@ class ProductsController(private val productQueries: ProductQueries,
             @RequestParam name: String?,
             @RequestParam(defaultValue = "20") pageSize: Int,
             @RequestParam(defaultValue = "0") page: Int,
-            @RequestParam sort: String?): PageDto<ProductListItemDto> {
-        val pageable = PageRequest.of(page, pageSize, SortUtils.getSortFromString(sort))
+            @RequestParam sort: ProductSortFields?): PageDto<ProductListItemDto> {
+        val pageable = PageRequest.of(page, pageSize, SortUtils.getSortFromString(sort?.data))
         val data = productQueries.getProductsList(ProductsListRequest(name, pageable))
         val items = data.page.map { productConverter.convertProductListItem(it) }.content
         val pageInfo = PageInfo(data.page.size, data.page.number, data.page.totalPages)
@@ -41,7 +53,7 @@ class ProductsController(private val productQueries: ProductQueries,
     }
 
     @PutMapping("/{uuid}")
-    fun saveProduct(@PathVariable uuid: UUID, @RequestBody dto: SaveProductIncomeDto) {
+    fun saveProduct(@Valid @PathVariable uuid: UUID, @Valid @RequestBody dto: SaveProductIncomeDto) {
         val command = SaveProductCommand(uuid, dto.name)
         saveProductCommandHandler.execute(command)
     }

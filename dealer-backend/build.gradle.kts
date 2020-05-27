@@ -40,6 +40,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.liquibase:liquibase-core")
+    implementation("org.springdoc:springdoc-openapi-ui:1.3.9")
 //    implementation("org.springframework.session:spring-session-jdbc")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     runtimeOnly("org.postgresql:postgresql")
@@ -48,10 +49,10 @@ dependencies {
         exclude(module = "junit")
         exclude(module = "mockito-core")
     }
-    intTestImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("com.ninja-squad:springmockk:2.0.1")
+    intTestImplementation("org.springframework.security:spring-security-test")
 }
 
 tasks.withType<Test> {
