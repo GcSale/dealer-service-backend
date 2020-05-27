@@ -1,0 +1,19 @@
+version: "3"
+services:
+  db-test:
+    image: library/postgres:12
+    environment:
+      POSTGRES_USER: gsuser
+      POSTGRES_PASSWORD: gspass
+      POSTGRES_DB: gsdb
+    ports:
+    - 30001:5432
+
+  db-app:
+    image: library/postgres:12
+    environment:
+      POSTGRES_USER: gsuser
+      POSTGRES_PASSWORD: gspass
+      POSTGRES_DB: gsdb
+    ports:
+      - 30002:5432
