@@ -9,9 +9,9 @@ import com.gcsale.dealerbackend.domain.services.ProductUpdateDto
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verifyAll
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
+import org.springframework.validation.Errors
 import java.util.*
 
 internal class SaveProductCommandHandlerImplTest {
@@ -29,25 +29,24 @@ internal class SaveProductCommandHandlerImplTest {
         val id: Long = 100500
         val productMock = Product(name, newUUID)
 
-        val findProductSlot = slot<UUID>()
-        val saveProductSlot = slot<Product>()
-        val createProductSlot = slot<ProductCreationDto>()
+        val validateErrors = slot<Errors>()
 
-        every { productRepository.findByExternalUUID(capture(findProductSlot)) } returns null
-        every { productRepository.save(capture(saveProductSlot)) } returns Product(name, newUUID, id)
-        every { productService.createProduct(capture(createProductSlot)) } returns productMock
+        every { productRepository.findByExternalUUID(any()) } returns null
+        every { productRepository.save<Product>(any()) } returns Product(name, newUUID, id)
+        every { productService.createProduct(any()) } returns productMock
+        every { validator.supports(any()) } returns true
+        every { validator.validate(any(), capture(validateErrors)) } answers {}
 
         val command = SaveProductCommand(newUUID, name)
         handlerImpl.execute(command)
 
-        assertTrue(findProductSlot.isCaptured)
-        assertEquals(newUUID, findProductSlot.captured)
-
-        assertTrue(saveProductSlot.isCaptured)
-        assertEquals(productMock, saveProductSlot.captured)
-
-        assertTrue(createProductSlot.isCaptured)
-        assertEquals(ProductCreationDto(newUUID, name), createProductSlot.captured)
+        verifyAll {
+            productRepository.findByExternalUUID(newUUID)
+            productRepository.save(productMock)
+            productService.createProduct(ProductCreationDto(newUUID, name))
+            validator.supports(SaveProductCommand::class.java)
+            validator.validate(command, validateErrors.captured)
+        }
     }
 
     @Test
@@ -61,24 +60,23 @@ internal class SaveProductCommandHandlerImplTest {
         val newProduct = Product(newName, productUUID, id)
 
 
-        val findProductSlot = slot<UUID>()
-        val saveProductSlot = slot<Product>()
-        val updateProductSlot = slot<ProductUpdateDto>()
+        val validateErrors = slot<Errors>()
 
-        every { productRepository.findByExternalUUID(capture(findProductSlot)) } returns existedProduct
-        every { productRepository.save(capture(saveProductSlot)) } returns newProduct
-        every { productService.updateProduct(capture(updateProductSlot)) } returns newProduct
+        every { productRepository.findByExternalUUID(any()) } returns existedProduct
+        every { productRepository.save<Product>(any()) } returns newProduct
+        every { productService.updateProduct(any()) } returns newProduct
+        every { validator.supports(any()) } returns true
+        every { validator.validate(any(), capture(validateErrors)) } answers {}
 
         val command = SaveProductCommand(productUUID, newName)
         handlerImpl.execute(command)
 
-        assertTrue(findProductSlot.isCaptured)
-        assertEquals(productUUID, findProductSlot.captured)
-
-        assertTrue(saveProductSlot.isCaptured)
-        assertEquals(newProduct, saveProductSlot.captured)
-
-        assertTrue(updateProductSlot.isCaptured)
-        assertEquals(ProductUpdateDto(existedProduct, newName), updateProductSlot.captured)
+        verifyAll {
+            productRepository.findByExternalUUID(productUUID)
+            productRepository.save(newProduct)
+            productService.updateProduct(ProductUpdateDto(existedProduct, newName))
+            validator.supports(SaveProductCommand::class.java)
+            validator.validate(command, validateErrors.captured)
+        }
     }
 }

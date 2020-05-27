@@ -2,6 +2,7 @@ package com.gcsale.dealerbackend.application.queries
 
 import com.gcsale.dealerbackend.application.converters.ProductQueriesConverter
 import com.gcsale.dealerbackend.application.repository.ProductRepository
+import com.gcsale.dealerbackend.application.validators.ProductsListRequestValidator
 import com.gcsale.dealerbackend.domain.models.Product
 import io.mockk.*
 import org.junit.jupiter.api.Assertions.*
@@ -9,13 +10,15 @@ import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.validation.Errors
 import java.util.*
 
 internal class ProductQueriesImplTest {
 
     private val productRepository = mockk<ProductRepository>()
     private val productConverter = mockk<ProductQueriesConverter>()
-    private val productQueries = ProductQueriesImpl(productRepository, productConverter)
+    private val validator = mockk<ProductsListRequestValidator>()
+    private val productQueries = ProductQueriesImpl(productRepository, productConverter, validator)
 
     @Test
     fun `get products without filtering`() {
@@ -23,14 +26,18 @@ internal class ProductQueriesImplTest {
 
         val findAllSlot = slot<Pageable>()
         val convertProduct = slot<Product>()
+        val validateErrors = slot<Errors>()
 
         val products = (0..2).map { Product("p${it}", UUID.randomUUID()) }
         every { productRepository.findAll(capture(findAllSlot)) } returns PageImpl(products, pageable, 100)
         every {
             productConverter.convertProductToListItem(capture(convertProduct))
         } answers { ProductsListItemResponse(convertProduct.captured.externalUUID, convertProduct.captured.name) }
+        every { validator.supports(any()) } returns true
+        every { validator.validate(any(), capture(validateErrors)) } answers {}
 
-        val actual = productQueries.getProductsList(ProductsListRequest(null, pageable))
+        val request = ProductsListRequest(null, pageable)
+        val actual = productQueries.getProductsList(request)
 
         assertEquals(100, actual.page.totalElements)
         assertEquals(1, actual.page.number)
@@ -44,6 +51,8 @@ internal class ProductQueriesImplTest {
 
         verify {
             productRepository.findAll(pageable)
+            validator.supports(ProductsListRequest::class.java)
+            validator.validate(request, validateErrors.captured)
         }
 
         verifySequence {
@@ -61,6 +70,7 @@ internal class ProductQueriesImplTest {
         val findAllSlotPageable = slot<Pageable>()
         val convertProduct = slot<Product>()
         val products = (0..2).map { Product("p${it}", UUID.randomUUID()) }
+        val validateErrors = slot<Errors>()
 
         every {
             productRepository.findAllByNameContains(capture(findAllSlotName), capture(findAllSlotPageable))
@@ -68,8 +78,11 @@ internal class ProductQueriesImplTest {
         every {
             productConverter.convertProductToListItem(capture(convertProduct))
         } answers { ProductsListItemResponse(convertProduct.captured.externalUUID, convertProduct.captured.name) }
+        every { validator.supports(any()) } returns true
+        every { validator.validate(any(), capture(validateErrors)) } answers {}
 
-        val actual = productQueries.getProductsList(ProductsListRequest("p", pageable))
+        val request = ProductsListRequest("p", pageable)
+        val actual = productQueries.getProductsList(request)
 
         assertEquals(100, actual.page.totalElements)
         assertEquals(1, actual.page.number)
@@ -83,6 +96,8 @@ internal class ProductQueriesImplTest {
 
         verify {
             productRepository.findAllByNameContains("p", pageable)
+            validator.supports(ProductsListRequest::class.java)
+            validator.validate(request, validateErrors.captured)
         }
 
         verifySequence {

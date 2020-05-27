@@ -123,6 +123,17 @@ internal class ProductsControllerTest {
     }
 
     @Test
+    fun `find find products by non existing property`() {
+        val response = mockMvc.get("/products/?pageSize=4&page=0&sort=-unknown").andReturn()
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.response.status)
+
+        val data: List<ValidationErrorDto> = mapper.readValue(response.response.contentAsString)
+        assertEquals(1, data.size)
+        assertEquals("pageable.sort", data[0].field)
+        assertEquals("value.non_sortable_field", data[0].errorCode)
+    }
+
+    @Test
     fun `get info about existed product`() {
         val product = Product("super boat", UUID.randomUUID()).also { productRepository.saveAndFlush(it) }
 
