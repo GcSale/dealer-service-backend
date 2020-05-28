@@ -41,6 +41,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.liquibase:liquibase-core")
     implementation("org.springdoc:springdoc-openapi-ui:1.3.9")
+
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 //    implementation("org.springframework.session:spring-session-jdbc")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
     runtimeOnly("org.postgresql:postgresql")

@@ -15,12 +15,15 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.options
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.*
 import javax.transaction.Transactional
@@ -158,5 +161,15 @@ internal class ProductsControllerTest {
     fun `delete not existed product`() {
         val response = mockMvc.delete("/products/${UUID.randomUUID()}").andReturn()
         assertEquals(HttpStatus.NO_CONTENT.value(), response.response.status)
+    }
+
+    @Test
+    fun `test accessible by CORS policy`() {
+        val response = mockMvc.options("/products", dsl = {
+            header(HttpHeaders.ORIGIN, "http://acme.com:3000")
+            header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
+        }).andReturn()
+        assertEquals(HttpStatus.OK.value(), response.response.status)
+        assertEquals("http://acme.com:3000", response.response.getHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
     }
 }
