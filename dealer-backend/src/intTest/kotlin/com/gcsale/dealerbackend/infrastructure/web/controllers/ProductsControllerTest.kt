@@ -46,7 +46,7 @@ internal class ProductsControllerTest {
     fun `create new product`() {
         val uuid = UUID.randomUUID()
         val dto = SaveProductIncomeDto("super car")
-        mockMvc.perform(put("/products/${uuid}")
+        mockMvc.perform(put("/v1/products/${uuid}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk)
@@ -64,7 +64,7 @@ internal class ProductsControllerTest {
         productRepository.save(existedProduct)
 
         val dto = SaveProductIncomeDto("new name")
-        mockMvc.perform(put("/products/${existedProduct.externalUUID}")
+        mockMvc.perform(put("/v1/products/${existedProduct.externalUUID}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(dto)))
                 .andExpect(status().isOk)
@@ -80,7 +80,7 @@ internal class ProductsControllerTest {
     fun `create new product validation exception`() {
         val uuid = UUID.randomUUID()
         val dto = SaveProductIncomeDto("c")
-        val response = mockMvc.perform(put("/products/${uuid}")
+        val response = mockMvc.perform(put("/v1/products/${uuid}")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(dto)))
                 .andReturn()
@@ -98,7 +98,7 @@ internal class ProductsControllerTest {
         }
         val expectedProducts = products.reversed().subList(3, 6)
 
-        val response = mockMvc.get("/products/?name=p&pageSize=3&page=1").andReturn()
+        val response = mockMvc.get("/v1/products/?name=p&pageSize=3&page=1").andReturn()
         assertEquals(HttpStatus.OK.value(), response.response.status)
 
         val data: PageDto<ProductListItemDto> = mapper.readValue(response.response.contentAsString)
@@ -115,7 +115,7 @@ internal class ProductsControllerTest {
         }
         val expectedProducts = products.subList(0, 4)
 
-        val response = mockMvc.get("/products/?pageSize=4&page=0&sort=-name").andReturn()
+        val response = mockMvc.get("/v1/products/?pageSize=4&page=0&sort=-name").andReturn()
         assertEquals(HttpStatus.OK.value(), response.response.status)
 
         val data: PageDto<ProductListItemDto> = mapper.readValue(response.response.contentAsString)
@@ -127,7 +127,7 @@ internal class ProductsControllerTest {
 
     @Test
     fun `find find products by non existing property`() {
-        val response = mockMvc.get("/products/?pageSize=4&page=0&sort=-unknown").andReturn()
+        val response = mockMvc.get("/v1/products/?pageSize=4&page=0&sort=-unknown").andReturn()
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.response.status)
     }
 
@@ -135,7 +135,7 @@ internal class ProductsControllerTest {
     fun `get info about existed product`() {
         val product = Product("super boat", UUID.randomUUID()).also { productRepository.saveAndFlush(it) }
 
-        val response = mockMvc.get("/products/${product.externalUUID}").andReturn()
+        val response = mockMvc.get("/v1/products/${product.externalUUID}").andReturn()
         assertEquals(HttpStatus.OK.value(), response.response.status)
 
         val data: ProductInfoDto = mapper.readValue(response.response.contentAsString)
@@ -146,26 +146,26 @@ internal class ProductsControllerTest {
 
     @Test
     fun `get info about not existed product`() {
-        val response = mockMvc.get("/products/${UUID.randomUUID()}").andReturn()
+        val response = mockMvc.get("/v1/products/${UUID.randomUUID()}").andReturn()
         assertEquals(HttpStatus.NOT_FOUND.value(), response.response.status)
     }
 
     @Test
     fun `delete existed product`() {
         val product = Product("super boat", UUID.randomUUID()).also { productRepository.saveAndFlush(it) }
-        val response = mockMvc.delete("/products/${product.externalUUID}").andReturn()
+        val response = mockMvc.delete("/v1/products/${product.externalUUID}").andReturn()
         assertEquals(HttpStatus.NO_CONTENT.value(), response.response.status)
     }
 
     @Test
     fun `delete not existed product`() {
-        val response = mockMvc.delete("/products/${UUID.randomUUID()}").andReturn()
+        val response = mockMvc.delete("/v1/products/${UUID.randomUUID()}").andReturn()
         assertEquals(HttpStatus.NO_CONTENT.value(), response.response.status)
     }
 
     @Test
     fun `test accessible by CORS policy`() {
-        val response = mockMvc.options("/products", dsl = {
+        val response = mockMvc.options("/v1/products", dsl = {
             header(HttpHeaders.ORIGIN, "http://acme.com:3000")
             header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
         }).andReturn()
