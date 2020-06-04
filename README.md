@@ -56,3 +56,5 @@ In `dev/docker-compose.yaml` there are 2 databases:
 2. `db-app` for using in local development if you want to run and check something by hand
 
 Swagger link: [http://localhost:8080/swagger.html](http://localhost:8080/swagger.html)
+
+Run full tests in isolation: `docker-compose -f ci/docker-compose.yml run tests`
