@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.GCSALE_DOCKER_REGISTRY_USERNAME }}
           password: ${{ secrets.GCSALE_DOCKER_REGISTRY_TOKEN }}
           registry: docker.pkg.github.com
-          repository: gcsale/DealerServiceBackend/gs-dealer-backend-image
+          repository: gcsale/dealer-service-backend/gs-dealer-backend-image
           auto_tag: true
 
       - name: Send event to deploy service
