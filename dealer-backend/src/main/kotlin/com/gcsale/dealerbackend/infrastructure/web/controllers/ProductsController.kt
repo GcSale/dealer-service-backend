@@ -28,7 +28,7 @@ enum class ProductSortFields(val data: String) {
 }
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/v1/products")
 class ProductsController(private val productQueries: ProductQueries,
                          private val saveProductCommandHandler: SaveProductCommandHandler,
                          private val productConverter: ProductConverter,

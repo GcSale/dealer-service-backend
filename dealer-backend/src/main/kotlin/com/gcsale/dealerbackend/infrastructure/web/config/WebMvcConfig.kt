@@ -1,11 +1,9 @@
 package com.gcsale.dealerbackend.infrastructure.web.config
 
 import com.gcsale.dealerbackend.infrastructure.web.converters.ProductSortFieldsToEnumConverter
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.FormatterRegistry
-import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 

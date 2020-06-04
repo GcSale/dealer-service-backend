@@ -1,0 +1,31 @@
+name: Deploy image
+
+on:
+  push:
+    tags: [v*]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:11}
+        
+      - uses: jerray/publish-docker-action@master
+        with:
+          username: ${{ secrets.GCSALE_DOCKER_REGISTRY_USERNAME }}
+          password: ${{ secrets.GCSALE_DOCKER_REGISTRY_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: gcsale/DealerServiceBackend/gs-dealer-backend-image
+          auto_tag: true
+
+      - name: Send event to deploy service
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GCSALE_REPO_ACCESS_FULL }}
+          repository: GcSale/gs-kubernetes
+          event-type: gs-dealer-backend-released
+          client-payload: '{"version": "${{ env.RELEASE_VERSION }}"}'
