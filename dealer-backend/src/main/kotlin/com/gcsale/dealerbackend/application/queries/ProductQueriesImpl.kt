@@ -16,7 +16,7 @@ class ProductQueriesImpl(private val productRepository: ProductRepository,
         ValidationHelper.performValidation(request, validator)
 
         val page = if (request.name != null) {
-            productRepository.findAllByNameContains(request.name, request.pageable)
+            productRepository.findAllByNameContainsIgnoreCase(request.name, request.pageable)
         } else {
             productRepository.findAll(request.pageable)
         }

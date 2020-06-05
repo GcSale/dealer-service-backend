@@ -73,7 +73,7 @@ internal class ProductQueriesImplTest {
         val validateErrors = slot<Errors>()
 
         every {
-            productRepository.findAllByNameContains(capture(findAllSlotName), capture(findAllSlotPageable))
+            productRepository.findAllByNameContainsIgnoreCase(capture(findAllSlotName), capture(findAllSlotPageable))
         } returns PageImpl(products, pageable, 100)
         every {
             productConverter.convertProductToListItem(capture(convertProduct))
@@ -95,7 +95,7 @@ internal class ProductQueriesImplTest {
         }
 
         verify {
-            productRepository.findAllByNameContains("p", pageable)
+            productRepository.findAllByNameContainsIgnoreCase("p", pageable)
             validator.supports(ProductsListRequest::class.java)
             validator.validate(request, validateErrors.captured)
         }
