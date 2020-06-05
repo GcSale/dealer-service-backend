@@ -126,6 +126,18 @@ internal class ProductsControllerTest {
     }
 
     @Test
+    fun `find by name substring case insensitive`() {
+        Product("MYSUPERBOAT", UUID.randomUUID()).also { p -> productRepository.saveAndFlush(p) }
+
+        val response = mockMvc.get("/v1/products/?name=super").andReturn()
+        assertEquals(HttpStatus.OK.value(), response.response.status)
+
+        val data: PageDto<ProductListItemDto> = mapper.readValue(response.response.contentAsString)
+        assertEquals(1, data.items.size)
+        assertEquals("MYSUPERBOAT", data.items[0].name)
+    }
+
+    @Test
     fun `find find products by non existing property`() {
         val response = mockMvc.get("/v1/products/?pageSize=4&page=0&sort=-unknown").andReturn()
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.response.status)
